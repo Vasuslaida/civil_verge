@@ -85,6 +85,30 @@ export default function VoiceChatbot() {
 
   const messagesEndRef = useRef(null)
 
+  const speakText = (text) => {
+  if (!window.speechSynthesis || !text) return;
+
+  window.speechSynthesis.cancel();
+
+  const utterance = new SpeechSynthesisUtterance(text);
+
+  utterance.rate = 1;
+  utterance.pitch = 1;
+  utterance.volume = 1;
+
+  const voices = window.speechSynthesis.getVoices();
+
+  const hindiVoice =
+    voices.find(v => v.lang === "hi-IN") ||
+    voices.find(v => v.lang.startsWith("hi"));
+
+  if (hindiVoice) {
+    utterance.voice = hindiVoice;
+  }
+
+  window.speechSynthesis.speak(utterance);
+};
+
   // ── Test API connection whenever the panel is opened ──────────────────────
   useEffect(() => {
     if (!isOpen) return;
@@ -187,6 +211,7 @@ export default function VoiceChatbot() {
       });
 
       setMessages(prev => [...prev, { role: "bot", text: reply }]);
+      speakText(reply);
     } catch (error) {
       console.error("Chatbot send error:", error.message);
 
@@ -201,10 +226,23 @@ export default function VoiceChatbot() {
       }
 
       setMessages(prev => [...prev, { role: "bot", text: errorText }]);
+      speakText(errorText);
     } finally {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    window.speechSynthesis.getVoices();
+
+    window.speechSynthesis.onvoiceschanged = () => {
+      window.speechSynthesis.getVoices();
+    };
+
+    return () => {
+      window.speechSynthesis.cancel();
+    };
+  }, []);
 
   // ── JSX ───────────────────────────────────────────────────────────────────
   return (
@@ -231,7 +269,10 @@ export default function VoiceChatbot() {
               <span className="font-bold text-sm text-slate-100">CivilVerge Assistant</span>
             </div>
             <button
-              onClick={() => setIsOpen(false)}
+              onClick={() => {
+                window.speechSynthesis.cancel();
+                setIsOpen(false);
+              }}
               aria-label="Close Chat"
               className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 transition cursor-pointer"
             >

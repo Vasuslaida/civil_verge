@@ -14,3 +14,4 @@ class Settings(BaseSettings):
         env_file = ".env"
 
 settings = Settings()
+print("Loaded Gemini Key:", repr(settings.GEMINI_API_KEY))

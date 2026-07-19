@@ -38,6 +38,8 @@ async def create_report(
 
     # AI Triage
     ai_result = triage_report(title, description, category)
+    print("AI RESULT:", ai_result)
+    ai_result = triage_report(title, description, category)
     ai_summary = ai_result.get("ai_summary", "AI summarization failed.")
     priority = ai_result.get("priority", "medium")
     department_name = ai_result.get("department_name")
